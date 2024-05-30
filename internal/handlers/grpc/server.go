@@ -8,10 +8,11 @@ import (
 	"context"
 	"errors"
 	"log/slog"
-	"strings"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	lop "github.com/samber/lo/parallel"
 )
 
 var _ auth.AuthServer = (*Server)(nil)
@@ -20,7 +21,7 @@ type AuthUseCase interface {
 	SignUp(ctx context.Context, user *entity.User) (*entity.Tokens, error)
 	SignIn(ctx context.Context, user *entity.User) (*entity.Tokens, error)
 	SingOut(ctx context.Context, accessToken string) error
-	Authenticate(ctx context.Context, accessToken string, role entity.Role) (*entity.UserClaims, error)
+	Authenticate(ctx context.Context, accessToken string, role []entity.Role) (*entity.UserClaims, error)
 	Refresh(ctx context.Context, refreshToken string) (*entity.Tokens, error)
 }
 
@@ -117,7 +118,9 @@ func (s *Server) SignOut(ctx context.Context, request *auth.SignOutRequest) (*au
 }
 
 func (s *Server) Auth(ctx context.Context, request *auth.AuthRequest) (*auth.AuthResponse, error) {
-	claims, err := s.auc.Authenticate(ctx, request.AccessToken, entity.Role(strings.ToLower(request.Role.String())))
+	claims, err := s.auc.Authenticate(ctx, request.AccessToken, lop.Map(request.Roles, func(r auth.Role, _ int) entity.Role {
+		return entity.Role(r.String())
+	}))
 	if err != nil {
 		if errors.Is(err, usecase.ErrTokenExpired) {
 			return nil, status.Error(codes.Unauthenticated, "token expired")

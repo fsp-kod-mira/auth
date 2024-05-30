@@ -13,6 +13,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/lib/pq"
+	lo "github.com/samber/lo"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -144,7 +145,7 @@ func (s *UseCase) SingOut(ctx context.Context, accessToken string) error {
 	return s.tokenStorage.Delete(ctx, claims.Id)
 }
 
-func (s *UseCase) Authenticate(ctx context.Context, accessToken string, role entity.Role) (*entity.UserClaims, error) {
+func (s *UseCase) Authenticate(ctx context.Context, accessToken string, role []entity.Role) (*entity.UserClaims, error) {
 	log := ctx.Value("logger").(*slog.Logger).With(slog.String("method", "Authenticate"))
 
 	claims, err := jwt.Validate(accessToken, s.cfg.JWT.Access.Secret)
@@ -169,22 +170,12 @@ func (s *UseCase) Authenticate(ctx context.Context, accessToken string, role ent
 		return nil, ErrSessionNotFound
 	}
 
-	if u.Role != entity.RoleAdmin || entity.Role(u.Role) != role {
-		log.Error("forbidden", slog.String("role", role.String()), slog.String("user_role", string(entity.Role(u.Role))))
+	if u.Role != entity.RoleAdmin || lo.Contains(role, entity.Role(u.Role)) {
+		log.Error("forbidden", slog.Any("roles", role), slog.String("user_role", u.Role))
 		return nil, ErrInvalidRole
 	}
 
 	return claims, nil
-}
-
-func (s *UseCase) checkRole(compareTo string, roles ...string) bool {
-	for _, r := range roles {
-		if r == compareTo {
-			return true
-		}
-	}
-
-	return false
 }
 
 func (s *UseCase) Refresh(ctx context.Context, refreshToken string) (*entity.Tokens, error) {
