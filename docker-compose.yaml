@@ -1,0 +1,40 @@
+version: '4.5'
+services:
+  app:
+    container_name: auth
+    build:
+      context: .
+    env_file:
+      - .env.prod
+    environment:
+      WAIT_HOSTS: postgres:5432, redis:6379
+    depends_on:
+      - postgres
+      - redis
+    ports:
+      - "50053:8080"
+
+  postgres:
+    image: postgres:13.14-alpine3.19
+    restart: always
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    env_file:
+      - .env.pg
+    ports:
+      - "5436:5432"
+
+  redis:
+    image: redis:7.2.4-alpine
+    restart: always
+    ports:
+      - "6379:6379"
+    env_file:
+      - .env.redis
+    volumes:
+      - redisdata:/data
+
+volumes:
+  pgdata:
+  redisdata:
+
