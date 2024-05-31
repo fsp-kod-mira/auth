@@ -1,6 +1,5 @@
 BIN_DIR=bin
 
-#MODULE=github.com/mzhn-sochi/auth-service
 
 build:
 	mkdir -p $(BIN_DIR) #

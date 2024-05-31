@@ -1,6 +1,6 @@
 version: '4.5'
 services:
-  app:
+  auth-service:
     container_name: auth
     build:
       context: .
@@ -12,7 +12,7 @@ services:
       - postgres
       - redis
     ports:
-      - "50053:8080"
+      - "5252:5252"
 
   postgres:
     image: postgres:13.14-alpine3.19

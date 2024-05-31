@@ -43,6 +43,8 @@ func (u *UserStorage) Get(ctx context.Context, id string) (*entity.User, error) 
 		return nil, err
 	}
 
+	log.Info("user found in storage", slog.Any("user", user))
+
 	return &user, nil
 }
 

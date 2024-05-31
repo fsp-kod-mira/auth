@@ -182,12 +182,15 @@ func (s *Server) FindUserById(ctx context.Context, request *auth.FindUserByIdReq
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
+	slog.Info("found user", slog.Any("user", user), slog.Any("role", auth.Role(auth.Role_value[user.Role])))
+
 	return &auth.User{
 		Id:         user.Id,
 		LastName:   user.LastName,
 		FirstName:  user.FirstName,
 		MiddleName: user.MiddleName,
 		Email:      user.Email,
+		Role:       auth.Role(auth.Role_value[user.Role]),
 	}, nil
 }
 
