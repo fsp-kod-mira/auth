@@ -74,6 +74,8 @@ func (s *Server) SignIn(ctx context.Context, request *auth.SignInRequest) (*auth
 }
 
 func (s *Server) SignUp(ctx context.Context, request *auth.SignUpRequest) (*auth.Tokens, error) {
+	slog.Info("incoming signup request", slog.Any("request", request))
+
 	user := &entity.User{
 		UserCredentials: entity.UserCredentials{
 			Email:    request.Email,

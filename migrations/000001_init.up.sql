@@ -1,4 +1,4 @@
-CREATE TYPE roles AS ENUM ('admin', 'recruiter', 'hiring-manager', 'resource-manager');
+CREATE TYPE roles AS ENUM ('admin', 'recruiter', 'hiring_manager', 'resource_manager');
 
 CREATE TABLE IF NOT EXISTS users
 (
