@@ -145,7 +145,7 @@ func (s *UseCase) SingOut(ctx context.Context, accessToken string) error {
 	return s.tokenStorage.Delete(ctx, claims.Id)
 }
 
-func (s *UseCase) Authenticate(ctx context.Context, accessToken string, role []entity.Role) (*entity.UserClaims, error) {
+func (s *UseCase) Authenticate(ctx context.Context, accessToken string, roles []entity.Role) (*entity.UserClaims, error) {
 	log := ctx.Value("logger").(*slog.Logger).With(slog.String("method", "Authenticate"))
 
 	claims, err := jwt.Validate(accessToken, s.cfg.JWT.Access.Secret)
@@ -170,8 +170,10 @@ func (s *UseCase) Authenticate(ctx context.Context, accessToken string, role []e
 		return nil, ErrSessionNotFound
 	}
 
-	if u.Role != entity.RoleAdmin || lo.Contains(role, entity.Role(u.Role)) {
-		log.Error("forbidden", slog.Any("roles", role), slog.String("user_role", u.Role))
+	log.Info("ready to check role", slog.Any("roles", roles), slog.String("user_role", u.Role))
+
+	if len(roles) > 0 && u.Role != entity.RoleAdmin && !lo.Contains(roles, entity.Role(u.Role)) {
+		log.Error("forbidden", slog.Any("roles", roles), slog.String("user_role", u.Role))
 		return nil, ErrInvalidRole
 	}
 
